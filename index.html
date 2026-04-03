@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="MemoryScope AI – Interactive Virtual Memory Optimization Simulator that visualizes FIFO, LRU, and Optimal page replacement algorithms step-by-step." />
+  <title>MemoryScope AI – Virtual Memory Optimizer</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+
+  <!-- Chart.js for comparison graph -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ===== NAVBAR ===== -->
+  <nav class="navbar" id="navbar" role="navigation" aria-label="Main navigation">
+    <div class="nav-container">
+      <a href="#home" class="nav-brand" aria-label="MemoryScope AI Home">
+        <span class="brand-icon" aria-hidden="true">🧠</span>
+        <span class="brand-text">MemoryScope <span class="brand-accent">AI</span></span>
+      </a>
+
+      <ul class="nav-links" role="list">
+        <li><a href="#home"       class="nav-link active" id="nav-home">Home</a></li>
+        <li><a href="#simulator"  class="nav-link"        id="nav-simulator">Simulator</a></li>
+        <li><a href="#about"      class="nav-link"        id="nav-about">About&nbsp;Project</a></li>
+      </ul>
+
+      <div class="nav-controls">
+        <!-- Dark/Light mode toggle -->
+        <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark/light mode" title="Toggle theme">
+          <span class="theme-icon" id="themeIcon">☀️</span>
+        </button>
+        <!-- Mobile hamburger -->
+        <button class="hamburger" id="hamburger" aria-label="Open navigation menu" aria-expanded="false">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Mobile menu -->
+    <div class="mobile-menu" id="mobileMenu" aria-hidden="true" role="menu">
+      <a href="#home"      class="mobile-link" role="menuitem">Home</a>
+      <a href="#simulator" class="mobile-link" role="menuitem">Simulator</a>
+      <a href="#about"     class="mobile-link" role="menuitem">About Project</a>
+    </div>
+  </nav>
+
+  <!-- ===== HOME SECTION ===== -->
+  <section class="section hero-section" id="home" aria-labelledby="hero-heading">
+    <div class="hero-bg-animation" aria-hidden="true">
+      <div class="floating-orb orb-1"></div>
+      <div class="floating-orb orb-2"></div>
+      <div class="floating-orb orb-3"></div>
+      <div class="grid-lines"></div>
+    </div>
+
+    <div class="container">
+      <div class="hero-badge" aria-label="Operating Systems Tool">⚡ OS Concepts Visualizer</div>
+      <h1 id="hero-heading" class="hero-title">
+        Virtual Memory<br />
+        <span class="gradient-text">Optimization Simulator</span>
+      </h1>
+      <p class="hero-subtitle">
+        Visualize and compare FIFO, LRU &amp; Optimal page-replacement algorithms —
+        step by step, in real time.
+      </p>
+      <div class="hero-actions">
+        <a href="#simulator" class="btn btn-primary" id="hero-cta">
+          <span>Launch Simulator</span>
+          <span class="btn-arrow" aria-hidden="true">→</span>
+        </a>
+        <a href="#about" class="btn btn-ghost">Learn More</a>
+      </div>
+
+      <!-- Feature pills -->
+      <div class="feature-pills" role="list" aria-label="Key features">
+        <span class="pill" role="listitem">🔄 FIFO</span>
+        <span class="pill" role="listitem">🕰 LRU</span>
+        <span class="pill" role="listitem">🎯 Optimal</span>
+        <span class="pill" role="listitem">📊 Charts</span>
+        <span class="pill" role="listitem">🌙 Dark Mode</span>
+      </div>
+    </div>
+
+    <!-- Animated stats -->
+    <div class="stats-row container">
+      <div class="stat-card">
+        <span class="stat-num" data-target="3">0</span>
+        <span class="stat-label">Algorithms</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-num" data-target="100">0</span>
+        <span class="stat-label">% Free to Use</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-num" data-target="0" data-suffix="ms">0ms</span>
+        <span class="stat-label">Backend Latency</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== SIMULATOR SECTION ===== -->
+  <section class="section" id="simulator" aria-labelledby="sim-heading">
+    <div class="container">
+      <div class="section-header">
+        <h2 id="sim-heading" class="section-title">Simulator</h2>
+        <p class="section-subtitle">Configure your inputs and watch every algorithm run live</p>
+      </div>
+
+      <!-- ── INPUT PANEL ── -->
+      <div class="input-panel card" role="form" aria-label="Simulation input form">
+        <div class="input-grid">
+
+          <div class="input-group">
+            <label for="pageString" class="input-label">
+              📋 Page Reference String
+              <span class="input-hint">Comma-separated integers, e.g. 7,0,1,2,0,3</span>
+            </label>
+            <input
+              type="text"
+              id="pageString"
+              class="input-field"
+              placeholder="e.g. 7, 0, 1, 2, 0, 3, 0, 4, 2, 3, 0, 3"
+              aria-describedby="pageStringError"
+            />
+            <span class="input-error" id="pageStringError" role="alert" aria-live="polite"></span>
+          </div>
+
+          <div class="input-group">
+            <label for="frameCount" class="input-label">
+              🗂 Number of Frames
+              <span class="input-hint">Between 1 and 10</span>
+            </label>
+            <input
+              type="number"
+              id="frameCount"
+              class="input-field"
+              placeholder="e.g. 3"
+              min="1"
+              max="10"
+              aria-describedby="frameCountError"
+            />
+            <span class="input-error" id="frameCountError" role="alert" aria-live="polite"></span>
+          </div>
+
+        </div>
+
+        <!-- Quick presets -->
+        <div class="presets-row">
+          <span class="presets-label">Quick presets:</span>
+          <button class="preset-btn" id="preset1" data-pages="7,0,1,2,0,3,0,4,2,3,0,3,2" data-frames="3">Classic 3-Frame</button>
+          <button class="preset-btn" id="preset2" data-pages="1,2,3,4,1,2,5,1,2,3,4,5"   data-frames="4">Belady's Anomaly</button>
+          <button class="preset-btn" id="preset3" data-pages="0,1,2,3,0,1,4,0,1,2,3,4"   data-frames="3">Optimal Demo</button>
+        </div>
+
+        <!-- Action buttons -->
+        <div class="action-row">
+          <button class="btn btn-primary btn-lg" id="runBtn" aria-label="Run simulation">
+            <span class="btn-icon" aria-hidden="true">▶</span> Run Simulation
+          </button>
+          <button class="btn btn-danger btn-lg" id="resetBtn" aria-label="Reset simulation">
+            <span class="btn-icon" aria-hidden="true">↺</span> Reset
+          </button>
+        </div>
+      </div>
+
+      <!-- ── RESULTS AREA (hidden until run) ── -->
+      <div class="results-area" id="resultsArea" aria-live="polite" hidden>
+
+        <!-- Algorithm tabs -->
+        <div class="tabs-bar" role="tablist" aria-label="Algorithm results tabs">
+          <button class="tab-btn active" id="tab-fifo"    role="tab" aria-selected="true"  aria-controls="panel-fifo"    data-algo="fifo">FIFO</button>
+          <button class="tab-btn"        id="tab-lru"     role="tab" aria-selected="false" aria-controls="panel-lru"     data-algo="lru">LRU</button>
+          <button class="tab-btn"        id="tab-optimal" role="tab" aria-selected="false" aria-controls="panel-optimal" data-algo="optimal">Optimal</button>
+          <button class="tab-btn"        id="tab-compare" role="tab" aria-selected="false" aria-controls="panel-compare" data-algo="compare">📊 Compare</button>
+        </div>
+
+        <!-- FIFO Panel -->
+        <div class="tab-panel active" id="panel-fifo" role="tabpanel" aria-labelledby="tab-fifo">
+          <div class="algo-header">
+            <div class="algo-badge fifo-badge">FIFO</div>
+            <h3 class="algo-title">First In, First Out</h3>
+            <p class="algo-desc">The page that has been in memory the longest is evicted first.</p>
+          </div>
+          <div id="fifo-stats" class="algo-stats"></div>
+          <div class="table-wrapper" id="fifo-table-wrapper">
+            <table class="results-table" id="fifo-table" aria-label="FIFO simulation results">
+              <thead id="fifo-thead"></thead>
+              <tbody id="fifo-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- LRU Panel -->
+        <div class="tab-panel" id="panel-lru" role="tabpanel" aria-labelledby="tab-lru">
+          <div class="algo-header">
+            <div class="algo-badge lru-badge">LRU</div>
+            <h3 class="algo-title">Least Recently Used</h3>
+            <p class="algo-desc">The page that was accessed least recently is evicted first.</p>
+          </div>
+          <div id="lru-stats" class="algo-stats"></div>
+          <div class="table-wrapper" id="lru-table-wrapper">
+            <table class="results-table" id="lru-table" aria-label="LRU simulation results">
+              <thead id="lru-thead"></thead>
+              <tbody id="lru-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Optimal Panel -->
+        <div class="tab-panel" id="panel-optimal" role="tabpanel" aria-labelledby="tab-optimal">
+          <div class="algo-header">
+            <div class="algo-badge optimal-badge">OPT</div>
+            <h3 class="algo-title">Optimal Page Replacement</h3>
+            <p class="algo-desc">Evicts the page that will not be used for the longest time in the future (theoretically optimal).</p>
+          </div>
+          <div id="optimal-stats" class="algo-stats"></div>
+          <div class="table-wrapper" id="optimal-table-wrapper">
+            <table class="results-table" id="optimal-table" aria-label="Optimal simulation results">
+              <thead id="optimal-thead"></thead>
+              <tbody id="optimal-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Compare Panel -->
+        <div class="tab-panel" id="panel-compare" role="tabpanel" aria-labelledby="tab-compare">
+          <div class="compare-grid">
+            <!-- Summary cards -->
+            <div id="summary-cards" class="summary-cards" role="list" aria-label="Algorithm comparison summary"></div>
+            <!-- Chart -->
+            <div class="chart-card card">
+              <h3 class="chart-title">Page Faults Comparison</h3>
+              <div class="chart-wrapper">
+                <canvas id="faultsChart" aria-label="Bar chart comparing page faults across algorithms" role="img"></canvas>
+              </div>
+            </div>
+            <!-- Hit ratio chart -->
+            <div class="chart-card card">
+              <h3 class="chart-title">Hit Ratio Comparison</h3>
+              <div class="chart-wrapper">
+                <canvas id="hitsChart" aria-label="Doughnut chart showing hit ratios" role="img"></canvas>
+              </div>
+            </div>
+          </div>
+          <!-- Best algorithm callout -->
+          <div id="best-algo-callout" class="best-algo-callout" aria-live="polite"></div>
+        </div>
+
+      </div><!-- /results-area -->
+    </div>
+  </section>
+
+  <!-- ===== ABOUT SECTION ===== -->
+  <section class="section about-section" id="about" aria-labelledby="about-heading">
+    <div class="container">
+      <div class="section-header">
+        <h2 id="about-heading" class="section-title">About the Project</h2>
+        <p class="section-subtitle">Understanding page replacement in operating systems</p>
+      </div>
+
+      <div class="about-grid">
+
+        <!-- What is Virtual Memory -->
+        <div class="about-card card" id="about-vm">
+          <div class="about-card-icon" aria-hidden="true">💾</div>
+          <h3 class="about-card-title">Virtual Memory</h3>
+          <p class="about-card-text">
+            Virtual memory is a memory management technique that gives programs the illusion of a
+            larger address space than physical RAM permits. Pages are swapped between RAM and disk
+            on demand — making page replacement algorithms critical to performance.
+          </p>
+        </div>
+
+        <!-- FIFO -->
+        <div class="about-card card" id="about-fifo">
+          <div class="about-card-icon" aria-hidden="true">🔄</div>
+          <h3 class="about-card-title">FIFO Algorithm</h3>
+          <p class="about-card-text">
+            First In, First Out replaces the oldest page in memory. Simple to implement but can
+            suffer from <strong>Bélády's anomaly</strong> — adding frames sometimes <em>increases</em>
+            page faults.
+          </p>
+          <div class="complexity-badge">O(n) time · O(f) space</div>
+        </div>
+
+        <!-- LRU -->
+        <div class="about-card card" id="about-lru">
+          <div class="about-card-icon" aria-hidden="true">🕰️</div>
+          <h3 class="about-card-title">LRU Algorithm</h3>
+          <p class="about-card-text">
+            Least Recently Used evicts the page that hasn't been accessed for the longest time.
+            It approximates the Optimal algorithm and is widely used in real operating systems.
+          </p>
+          <div class="complexity-badge">O(n) time · O(f) space</div>
+        </div>
+
+        <!-- Optimal -->
+        <div class="about-card card" id="about-optimal">
+          <div class="about-card-icon" aria-hidden="true">🎯</div>
+          <h3 class="about-card-title">Optimal Algorithm</h3>
+          <p class="about-card-text">
+            Optimal (OPT/MIN) replaces the page that will not be used for the longest time in the
+            future. Since it requires future knowledge it cannot be implemented in practice — but
+            it provides a theoretical <strong>lower bound</strong> on page faults.
+          </p>
+          <div class="complexity-badge">O(n²) time · O(f) space</div>
+        </div>
+
+      </div>
+
+      <!-- How to use -->
+      <div class="howto-card card" id="how-to-use">
+        <h3 class="howto-title">🚀 How to Use</h3>
+        <ol class="howto-steps">
+          <li><strong>Enter</strong> a comma-separated page reference string (e.g. <code>7,0,1,2,0,3</code>)</li>
+          <li><strong>Set</strong> the number of memory frames (1 – 10)</li>
+          <li>Click <strong>Run Simulation</strong> to execute all three algorithms</li>
+          <li>Switch between <strong>FIFO, LRU, and Optimal</strong> tabs to inspect each result</li>
+          <li>Open the <strong>Compare</strong> tab to see charts and the best algorithm</li>
+        </ol>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ===== FOOTER ===== -->
+  <footer class="footer" role="contentinfo">
+    <div class="container footer-inner">
+      <div class="footer-brand">
+        <span class="brand-icon" aria-hidden="true">🧠</span>
+        <span class="brand-text">MemoryScope <span class="brand-accent">AI</span></span>
+      </div>
+      <p class="footer-text">
+        Built with ❤️ using HTML, CSS &amp; JavaScript · No backend required
+      </p>
+      <p class="footer-text footer-sub">
+        Operating Systems · Page Replacement Algorithms Visualizer
+      </p>
+    </div>
+  </footer>
+
+  <!-- Scroll-to-top button -->
+  <button class="scroll-top" id="scrollTopBtn" aria-label="Scroll to top" title="Back to top" hidden>↑</button>
+
+  <script src="script.js"></script>
+</body>
+</html>
