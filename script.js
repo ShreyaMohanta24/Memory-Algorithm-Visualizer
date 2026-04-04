@@ -1,4 +1,4 @@
-/**
+/*
  * ============================================================
  *  MemoryScope AI – script.js
  *  Virtual Memory Optimization Simulator
@@ -8,29 +8,16 @@
 
 'use strict';
 
-/* ============================================================
-   SECTION 1 – DOM References
-   (populated inside init() after DOMContentLoaded fires)
-   ============================================================ */
+// SECTION 1 – DOM References
 
-/** @type {Record<string, HTMLElement|NodeList>} */
 let dom = {};
 
-/* ============================================================
-   SECTION 2 – State
-   ============================================================ */
+// SECTION 2 – State
 
-/** Holds Chart.js instances so we can destroy before re-render */
 const chartInstances = { faults: null, hits: null };
 
-/* ============================================================
-   SECTION 3 – Utility Helpers
-   ============================================================ */
+// SECTION 3 – Utility Helpers
 
-/**
- * Parse the page reference string from the input field.
- * @returns {number[]|null} Array of page numbers or null on error.
- */
 function parsePageString(raw) {
   if (!raw || !raw.trim()) return null;
   const parts = raw.split(/[\s,]+/).filter(Boolean);
@@ -39,12 +26,8 @@ function parsePageString(raw) {
   return nums;
 }
 
-/**
- * Show or clear a validation error message.
- * @param {HTMLElement} el   - The error span element
- * @param {string}      msg  - Error text (empty string to clear)
- * @param {HTMLElement} field - The related input field
- */
+// Error display
+
 function setError(el, msg, field) {
   el.textContent = msg;
   if (msg) {
@@ -54,9 +37,8 @@ function setError(el, msg, field) {
   }
 }
 
-/**
- * Validate all inputs. Returns parsed values or null if invalid.
- */
+// Validate all inputs. Returns parsed values or null if invalid.
+
 function validateInputs() {
   let valid = true;
 
@@ -84,16 +66,15 @@ function validateInputs() {
   return { pages, frames };
 }
 
-/**
- * Animate a numeric stat from 0 to target.
- */
+// Animate a numeric stat from 0 to target.
+
 function animateCounter(el, target, suffix = '') {
   const duration = 800;
   const start = performance.now();
   function tick(now) {
     const elapsed = now - start;
     const progress = Math.min(elapsed / duration, 1);
-    const eased = 1 - Math.pow(1 - progress, 3); // cubic ease-out
+    const eased = 1 - Math.pow(1 - progress, 3); 
     el.textContent = Math.round(eased * target) + suffix;
     if (progress < 1) requestAnimationFrame(tick);
   }
@@ -125,16 +106,13 @@ function animateCounter(el, target, suffix = '') {
  * }
  */
 
-/* ── 4.1 FIFO ─────────────────────────────────────────────── */
+// FIFO 
 
-/**
+/*
  * FIFO – First In First Out page replacement algorithm.
  * Maintains a queue; the oldest page (head of queue) is evicted.
- *
- * @param {number[]} pages  - Page reference string
- * @param {number}   frames - Number of available frames
- * @returns {object} Simulation result
  */
+
 function runFIFO(pages, frames) {
   const queue  = [];           // FIFO queue of loaded pages (index 0 = oldest)
   const memory = new Set();    // Current pages in memory (for O(1) lookup)
@@ -188,9 +166,9 @@ function runFIFO(pages, frames) {
   return { pages, frames, steps, totalFaults, totalHits };
 }
 
-/* ── 4.2 LRU ─────────────────────────────────────────────── */
+// LRU
 
-/**
+/*
  * LRU – Least Recently Used page replacement algorithm.
  * Evicts the page whose most-recent use is farthest in the past.
  *
@@ -198,6 +176,7 @@ function runFIFO(pages, frames) {
  * @param {number}   frames - Number of available frames
  * @returns {object} Simulation result
  */
+
 function runLRU(pages, frames) {
   /**
    * We maintain an ordered list where the last element is the
@@ -256,9 +235,9 @@ function runLRU(pages, frames) {
   return { pages, frames, steps, totalFaults, totalHits };
 }
 
-/* ── 4.3 Optimal ─────────────────────────────────────────── */
+// Optimal
 
-/**
+/*
  * Optimal Page Replacement (OPT / MIN / Bélády's algorithm).
  * Evicts the page whose next use is farthest in the future.
  * Requires knowledge of the future reference string.
@@ -267,6 +246,7 @@ function runLRU(pages, frames) {
  * @param {number}   frames - Number of available frames
  * @returns {object} Simulation result
  */
+
 function runOptimal(pages, frames) {
   let memory = [];           // Current pages in memory (unordered)
   const steps = [];
