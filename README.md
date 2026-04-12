@@ -10,19 +10,6 @@
 
 ---
 
-## 📸 Screenshots
-
-> **Home / Hero Section**
-> ![Hero Section](screenshots/hero.png)
-
-> **Simulator – FIFO Table**
-> ![FIFO Table](screenshots/simulator_fifo.png)
-
-> **Compare Tab – Charts**
-> ![Comparison Charts](screenshots/compare_charts.png)
-
----
-
 ## 🚀 Features
 
 | Feature | Details |
