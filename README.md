@@ -56,19 +56,6 @@ It opens directly in your browser. No installation or server needed.
 2. Right-click `index.html` → **Open with Live Server**
 3. Browser auto-refreshes on every save
 
-### Option 3 – Python HTTP server
-```bash
-# Python 3
-python -m http.server 8080
-# Then open: http://localhost:8080
-```
-
-### Option 4 – Node.js `serve`
-```bash
-npx -y serve .
-# Then open the URL printed in the terminal
-```
-
 ---
 
 ## 🧮 Algorithms Explained
@@ -160,12 +147,8 @@ Replaces the page that will not be needed for the longest time in the future.
 ---
 
 ## 👨‍💻 Author
-
-Built as a **resume-level OS concepts project** showcasing:
-- Algorithm design and implementation
-- Modern frontend development (no frameworks)
-- Data visualization with Chart.js
-- Accessible, responsive UI/UX design
+Shreya Mohanta
+Soumya Singh
 
 ---
 
