@@ -147,8 +147,8 @@ Replaces the page that will not be needed for the longest time in the future.
 ---
 
 ## 👨‍💻 Author
-Shreya Mohanta
-Soumya Singh
+- Shreya Mohanta
+- Soumya Singh
 
 ---
 
