@@ -85,27 +85,6 @@ function animateCounter(el, target, suffix = '') {
    SECTION 4 – Page Replacement Algorithms
    ============================================================ */
 
-/**
- * Result object shape returned by each algorithm:
- * {
- *   pages       : number[],      // original reference string
- *   frames      : number,        // frame count
- *   steps       : Step[],        // per-reference step info
- *   totalFaults : number,
- *   totalHits   : number,
- * }
- *
- * Step shape:
- * {
- *   page        : number,        // page referenced
- *   framesBefore: (number|null)[], // frame state BEFORE this step
- *   framesAfter : (number|null)[], // frame state AFTER this step
- *   isFault     : boolean,
- *   evictedPage : number|null,   // page evicted (null on hit or cold-start)
- *   newPage     : number,        // page brought in (same as page on fault)
- * }
- */
-
 // FIFO 
 
 /*
@@ -114,8 +93,8 @@ function animateCounter(el, target, suffix = '') {
  */
 
 function runFIFO(pages, frames) {
-  const queue  = [];           // FIFO queue of loaded pages (index 0 = oldest)
-  const memory = new Set();    // Current pages in memory (for O(1) lookup)
+  const queue  = [];           
+  const memory = new Set();   
   const steps  = [];
   let totalFaults = 0;
   let totalHits   = 0;
@@ -123,11 +102,10 @@ function runFIFO(pages, frames) {
   for (let i = 0; i < pages.length; i++) {
     const page = pages[i];
 
-    // Capture frame state before this step
     const framesBefore = snapshotFrames(queue, frames);
 
     if (memory.has(page)) {
-      /* HIT – page is already in memory */
+      // HIT – page is already in memory 
       totalHits++;
       steps.push({
         page,
@@ -138,12 +116,12 @@ function runFIFO(pages, frames) {
         newPage    : page,
       });
     } else {
-      /* FAULT – page not in memory */
+      // FAULT – page not in memory
       totalFaults++;
       let evictedPage = null;
 
       if (queue.length === frames) {
-        // Evict the oldest page (front of queue)
+        // Evict the oldest page
         evictedPage = queue.shift();
         memory.delete(evictedPage);
       }
