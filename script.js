@@ -146,15 +146,6 @@ function runFIFO(pages, frames) {
 
 // LRU
 
-/*
- * LRU – Least Recently Used page replacement algorithm.
- * Evicts the page whose most-recent use is farthest in the past.
- *
- * @param {number[]} pages  - Page reference string
- * @param {number}   frames - Number of available frames
- * @returns {object} Simulation result
- */
-
 function runLRU(pages, frames) {
   /**
    * We maintain an ordered list where the last element is the
@@ -171,7 +162,7 @@ function runLRU(pages, frames) {
     const framesBefore = snapshotFrames(order, frames);
 
     if (memory.has(page)) {
-      /* HIT – move page to MRU position */
+      // HIT – move page to MRU position
       totalHits++;
       const idx = order.indexOf(page);
       order.splice(idx, 1);
@@ -186,12 +177,11 @@ function runLRU(pages, frames) {
         newPage    : page,
       });
     } else {
-      /* FAULT */
       totalFaults++;
       let evictedPage = null;
 
       if (order.length === frames) {
-        // Evict LRU page (front of order list)
+        // Evict LRU page 
         evictedPage = order.shift();
         memory.delete(evictedPage);
       }
@@ -218,15 +208,10 @@ function runLRU(pages, frames) {
 /*
  * Optimal Page Replacement (OPT / MIN / Bélády's algorithm).
  * Evicts the page whose next use is farthest in the future.
- * Requires knowledge of the future reference string.
- *
- * @param {number[]} pages  - Page reference string
- * @param {number}   frames - Number of available frames
- * @returns {object} Simulation result
  */
 
 function runOptimal(pages, frames) {
-  let memory = [];           // Current pages in memory (unordered)
+  let memory = [];           
   const steps = [];
   let totalFaults = 0;
   let totalHits   = 0;
@@ -236,7 +221,6 @@ function runOptimal(pages, frames) {
     const framesBefore = snapshotFrames(memory, frames);
 
     if (memory.includes(page)) {
-      /* HIT */
       totalHits++;
       steps.push({
         page,
@@ -247,7 +231,6 @@ function runOptimal(pages, frames) {
         newPage    : page,
       });
     } else {
-      /* FAULT */
       totalFaults++;
       let evictedPage = null;
 
@@ -273,15 +256,6 @@ function runOptimal(pages, frames) {
   return { pages, frames, steps, totalFaults, totalHits };
 }
 
-/**
- * Given the current memory contents, find the page whose next
- * reference is farthest away (or never referenced again).
- *
- * @param {number[]} memory  - Current pages in frames
- * @param {number[]} pages   - Full reference string
- * @param {number}   fromIdx - Index to start looking from
- * @returns {number} The page to evict
- */
 function findOptimalVictim(memory, pages, fromIdx) {
   let farthestPage  = -1;
   let farthestIndex = -1;
@@ -289,7 +263,7 @@ function findOptimalVictim(memory, pages, fromIdx) {
   for (const p of memory) {
     // Find the next use of this page starting at fromIdx
     let nextUse = pages.indexOf(p, fromIdx);
-    if (nextUse === -1) nextUse = Infinity; // Never used again → immediate victim
+    if (nextUse === -1) nextUse = Infinity; // Never used again
 
     if (nextUse > farthestIndex) {
       farthestIndex = nextUse;
@@ -300,14 +274,6 @@ function findOptimalVictim(memory, pages, fromIdx) {
   return farthestPage;
 }
 
-/**
- * Create a fixed-length snapshot array of current page order.
- * Filled with null for empty frame slots.
- *
- * @param {number[]} loaded - Pages currently loaded (in order)
- * @param {number}   frames - Frame count
- * @returns {(number|null)[]}
- */
 function snapshotFrames(loaded, frames) {
   const snap = Array.from({ length: frames }, () => null);
   loaded.forEach((page, idx) => {
@@ -320,13 +286,8 @@ function snapshotFrames(loaded, frames) {
    SECTION 5 – Render: Build HTML Tables
    ============================================================ */
 
-/**
- * Build the table header row.
- * Columns: Step | Page | Frame 1 … Frame N | Status
- *
- * @param {HTMLElement} thead  - The <thead> element
- * @param {number}      frames - Frame count
- */
+// Table Header
+
 function buildTableHeader(thead, frames) {
   thead.innerHTML = '';
   const tr = document.createElement('tr');
@@ -345,12 +306,8 @@ function buildTableHeader(thead, frames) {
   thead.appendChild(tr);
 }
 
-/**
- * Populate the table body row-by-row with staggered animation.
- *
- * @param {HTMLElement} tbody  - The <tbody> element
- * @param {object}      result - Algorithm result object
- */
+// Table Body
+
 function buildTableBody(tbody, result) {
   tbody.innerHTML = '';
   const { steps, frames } = result;
@@ -361,13 +318,10 @@ function buildTableBody(tbody, result) {
     tr.classList.add(step.isFault ? 'row-fault' : 'row-hit', 'row-anim');
     tr.style.animationDelay = `${idx * 30}ms`;
 
-    // Step number
     appendTd(tr, idx + 1);
 
-    // Page referenced
     const pageTd = appendTd(tr, step.page, 'page-cell');
 
-    // Frame slots
     for (let f = 0; f < frames; f++) {
       const val = step.framesAfter[f];
       const prev = step.framesBefore[f];
@@ -393,9 +347,8 @@ function buildTableBody(tbody, result) {
   });
 }
 
-/**
- * Helper: create and append a <td> with text content.
- */
+// Helper: create and append a <td> with text content.
+
 function appendTd(tr, text, className = '') {
   const td = document.createElement('td');
   td.textContent = text;
@@ -404,12 +357,6 @@ function appendTd(tr, text, className = '') {
   return td;
 }
 
-/**
- * Render the stats chips (faults, hits, hit ratio) above each table.
- *
- * @param {HTMLElement} container - The stats div
- * @param {object}      result    - Algorithm result
- */
 function renderStats(container, result) {
   const { totalFaults, totalHits } = result;
   const total    = totalFaults + totalHits;
@@ -439,14 +386,6 @@ function renderStats(container, result) {
    SECTION 6 – Render: Comparison Panel
    ============================================================ */
 
-/**
- * Populate the Compare tab with summary cards, charts, and the
- * best-algorithm callout.
- *
- * @param {object} fifoResult    - FIFO result object
- * @param {object} lruResult     - LRU result object
- * @param {object} optimalResult - Optimal result object
- */
 function renderComparison(fifoResult, lruResult, optimalResult) {
   const results = [
     { key: 'fifo',    label: 'FIFO',    icon: '🔄', cssClass: 'fifo-card',    result: fifoResult },
@@ -494,18 +433,19 @@ function renderComparison(fifoResult, lruResult, optimalResult) {
        Optimal always provides the theoretical minimum; LRU closely approximates it in practice.`;
 }
 
-/* ── Chart.js helpers ─────────────────────────────────────── */
+// ── Chart.js helpers ─────────────────────────────────────── 
 
-/** Shared color palette for charts */
+// Shared color palette for charts
 const CHART_COLORS = {
   fifo   : { solid: '#4f8ef7', alpha: 'rgba(79,142,247,0.75)' },
   lru    : { solid: '#9b59b6', alpha: 'rgba(155,89,182,0.75)' },
   optimal: { solid: '#2ecc71', alpha: 'rgba(46,204,113,0.75)' },
 };
 
-/**
- * Render (or re-render) the bar chart for page faults comparison.
- */
+
+// Render (or re-render) the bar chart for page faults comparison.
+
+
 function renderFaultsChart(results) {
   if (chartInstances.faults) {
     chartInstances.faults.destroy();
@@ -563,9 +503,8 @@ function renderFaultsChart(results) {
   });
 }
 
-/**
- * Render (or re-render) the doughnut chart for hit ratios.
- */
+//  Render (or re-render) the doughnut chart for hit ratios.
+
 function renderHitsChart(results) {
   if (chartInstances.hits) {
     chartInstances.hits.destroy();
@@ -621,9 +560,6 @@ function renderHitsChart(results) {
    SECTION 7 – Main Simulation Runner
    ============================================================ */
 
-/**
- * Orchestrate input validation, algorithm execution, and rendering.
- */
 function runSimulation() {
   const inputs = validateInputs();
   if (!inputs) return;
@@ -634,33 +570,32 @@ function runSimulation() {
   dom.runBtn.classList.add('loading');
   dom.runBtn.querySelector('span:last-child').textContent = ' Running…';
 
-  // Short async delay so the browser can repaint the loading state
   setTimeout(() => {
     try {
-      /* ── Run all three algorithms ── */
+      // ── Run all three algorithms ── 
       const fifoResult    = runFIFO(pages, frames);
       const lruResult     = runLRU(pages, frames);
       const optimalResult = runOptimal(pages, frames);
 
-      /* ── FIFO table ── */
+      // ── FIFO table ──
       buildTableHeader(dom.fifoThead, frames);
       buildTableBody(dom.fifoTbody, fifoResult);
       renderStats(dom.fifoStats, fifoResult);
 
-      /* ── LRU table ── */
+      // ── LRU table ──
       buildTableHeader(dom.lruThead, frames);
       buildTableBody(dom.lruTbody, lruResult);
       renderStats(dom.lruStats, lruResult);
 
-      /* ── Optimal table ── */
+      // ── Optimal table ──
       buildTableHeader(dom.optimalThead, frames);
       buildTableBody(dom.optimalTbody, optimalResult);
       renderStats(dom.optimalStats, optimalResult);
 
-      /* ── Comparison panel ── */
+      // ── Comparison panel ──
       renderComparison(fifoResult, lruResult, optimalResult);
 
-      /* ── Show results ── */
+      // ── Show results ──
       dom.resultsArea.hidden = false;
       dom.resultsArea.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
@@ -682,10 +617,6 @@ function runSimulation() {
    SECTION 8 – Tab Navigation
    ============================================================ */
 
-/**
- * Activate a specific algorithm tab by key name.
- * @param {'fifo'|'lru'|'optimal'|'compare'} key
- */
 function activateTab(key) {
   dom.tabButtons.forEach(btn => {
     const isActive = btn.dataset.algo === key;
@@ -703,7 +634,6 @@ function activateTab(key) {
    ============================================================ */
 
 function initTheme() {
-  // Prefer system setting on first load
   const prefersDark  = window.matchMedia('(prefers-color-scheme: dark)').matches;
   const savedTheme   = localStorage.getItem('memoryscope-theme');
   const initialTheme = savedTheme || (prefersDark ? 'dark' : 'light');
@@ -871,7 +801,6 @@ function toggleMobileMenu() {
    ============================================================ */
 
 function init() {
-  /* ── Populate DOM references now that the document is ready ── */
   dom = {
     // Inputs
     pageStringInput : document.getElementById('pageString'),
@@ -927,22 +856,22 @@ function init() {
     navAbout        : document.getElementById('nav-about'),
   };
 
-  /* Theme */
+  // Theme 
   initTheme();
 
-  /* Scroll effects */
+  // Scroll effects 
   window.addEventListener('scroll', updateNavActiveLink, { passive: true });
   updateNavActiveLink();
 
-  /* Scroll-to-top */
+  // Scroll-to-top 
   dom.scrollTopBtn.addEventListener('click', () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   });
 
-  /* Hamburger */
+  // Hamburger 
   dom.hamburger.addEventListener('click', toggleMobileMenu);
 
-  /* Close mobile menu when a link is clicked */
+  // Close mobile menu when a link is clicked 
   dom.mobileMenu.querySelectorAll('.mobile-link').forEach(link => {
     link.addEventListener('click', () => {
       dom.mobileMenu.classList.remove('open');
@@ -952,37 +881,36 @@ function init() {
     });
   });
 
-  /* Theme toggle */
+  // Theme toggle
   dom.themeToggle.addEventListener('click', toggleTheme);
 
-  /* Run & Reset */
+  // Run & Reset 
   dom.runBtn.addEventListener('click', runSimulation);
   dom.resetBtn.addEventListener('click', resetSimulation);
 
-  /* Preset buttons */
+  // Preset buttons 
   [dom.preset1, dom.preset2, dom.preset3].forEach(btn => {
     btn.addEventListener('click', () => loadPreset(btn));
   });
 
-  /* Tab switching */
+  // Tab switching 
   dom.tabButtons.forEach(btn => {
     btn.addEventListener('click', () => activateTab(btn.dataset.algo));
   });
 
-  /* Run simulation on Enter within inputs */
+  // Run simulation
   [dom.pageStringInput, dom.frameCountInput].forEach(input => {
     input.addEventListener('keydown', e => {
       if (e.key === 'Enter') runSimulation();
     });
   });
 
-  /* Hero stat counters */
   startHeroCounters();
 
-  /* Scroll animations for cards */
+  // Scroll animations for cards 
   initScrollAnimations();
 
-  /* Smooth anchor navigation – close mobile menu */
+  // Smooth anchor navigation – close mobile menu
   document.querySelectorAll('a[href^="#"]').forEach(a => {
     a.addEventListener('click', () => {
       if (dom.mobileMenu.classList.contains('open')) toggleMobileMenu();
@@ -990,5 +918,4 @@ function init() {
   });
 }
 
-// Kick everything off once the DOM is ready
 document.addEventListener('DOMContentLoaded', init);
